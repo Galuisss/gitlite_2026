@@ -1,4 +1,4 @@
-# Goal: commit a file and restore its committed contents.
+# Goal: commit records staged changes and clears the staging area.
 > init
 <<<
 + f.txt wug.txt
@@ -6,7 +6,6 @@
 <<<
 > commit "add f"
 <<<
-+ f.txt notwug.txt
-> checkout -- f.txt
+> commit "nothing left"
+No changes added to the commit.
 <<<
-= f.txt wug.txt

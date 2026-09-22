@@ -1,4 +1,4 @@
-# Goal: checkout switches branches and restores a tracked file.
+# Goal: checkout restores a tracked file from the current commit.
 > init
 <<<
 + f.txt wug.txt
@@ -6,20 +6,7 @@
 <<<
 > commit "first"
 <<<
-> branch old
-<<<
 + f.txt notwug.txt
-> add f.txt
-<<<
-> commit "second"
-<<<
-> checkout old
-<<<
-= f.txt wug.txt
-> checkout master
-<<<
-= f.txt notwug.txt
-+ f.txt wug2.txt
 > checkout -- f.txt
 <<<
-= f.txt notwug.txt
+= f.txt wug.txt

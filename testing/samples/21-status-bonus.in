@@ -1,28 +1,24 @@
-# Goal: basic status reports branches, staged additions, and staged removals.
+# Goal: bonus status reports modified and untracked files.
 > init
 <<<
 + f.txt wug.txt
 > add f.txt
 <<<
-+ g.txt wug2.txt
-> commit "track f"
-<<<
-> rm f.txt
-<<<
-> add g.txt
-<<<
++ f.txt notwug.txt
++ u.txt wug2.txt
 > status
 === Branches ===
 *master
 
 === Staged Files ===
-g.txt
-
-=== Removed Files ===
 f.txt
 
+=== Removed Files ===
+
 === Modifications Not Staged For Commit ===
+f.txt (modified)
 
 === Untracked Files ===
+u.txt
 
 <<<

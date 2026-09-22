@@ -45,7 +45,7 @@ void SomeObj::checkoutFileInCommit(const std::string&, const std::string&) {
 // ---------------- Subtask 3：status / checkout（分支） ----------------
 
 void SomeObj::status() {
-    // TODO: 显示分支、暂存区、未暂存修改与未跟踪文件
+    // TODO: 显示分支、暂存区；Bonus 再补全未暂存修改与未跟踪文件
 }
 
 void SomeObj::checkoutBranch(const std::string&) {
@@ -94,7 +94,7 @@ void SomeObj::pull(const std::string&, const std::string&) {
     // TODO: fetch 后将取回的分支合并到当前分支
 }
 
-// ---------------- Subtask 6：diff ----------------
+// ---------------- Subtask 6：status Bonus / diff ----------------
 
 void SomeObj::diff() {
     // TODO: 比较当前提交与工作目录并输出差异，无差异时不输出

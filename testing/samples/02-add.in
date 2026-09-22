@@ -1,20 +1,9 @@
-# Goal: add one working file to the staging area.
+# Goal: add accepts an existing working file and rejects a missing one.
 > init
 <<<
 + f.txt wug.txt
 > add f.txt
 <<<
-> status
-=== Branches ===
-*master
-
-=== Staged Files ===
-f.txt
-
-=== Removed Files ===
-
-=== Modifications Not Staged For Commit ===
-
-=== Untracked Files ===
-
+> add missing.txt
+File does not exist.
 <<<
