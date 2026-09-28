@@ -1,337 +1,161 @@
 #include "../include/Utils.h"
+
+#include <algorithm>
+#include <array>
+#include <cstdint>
 #include <cstdlib>
+#include <filesystem>
+#include <fstream>
+#include <iomanip>
 #include <iostream>
-#include <sys/stat.h>
-#include <cstring>
+#include <sstream>
 
-/** Assorted utilities.
- *
- * Give this file a good read as it provides several useful utility functions
- * to save you some time.
- */
+namespace fs = std::filesystem;
 
-// SHA1 implementation
-namespace SHA1 {
-    void SHA::reset() {
-        A = 0x67452301;
-        B = 0xEFCDAB89;
-        C = 0x98BADCFE;
-        D = 0x10325476;
-        E = 0xC3D2E1F0;
-    }
-    
-    std::string SHA::padding(std::string message) {
-        int originalLength = message.length();
-        int newLength = ((originalLength + 8) + 63) / 64 * 64;
-        std::string newMessage = message;
-        newMessage.resize(newLength, 0);
-        newMessage[originalLength] = static_cast<char>(0x80);
-        int bitLength = originalLength * 8;
-        for(int i = newLength - 1; i >= newLength - 8; i--) {
-            newMessage[i] = bitLength % 256;
-            bitLength /= 256;
+namespace {
+std::uint32_t rol(std::uint32_t value, int bits) {
+    return (value << bits) | (value >> (32 - bits));
+}
+}
+
+std::string Utils::sha1(const std::string& data) {
+    std::vector<std::uint8_t> msg(data.begin(), data.end());
+    const std::uint64_t bitLen = static_cast<std::uint64_t>(msg.size()) * 8ULL;
+    msg.push_back(0x80);
+    while ((msg.size() % 64) != 56) msg.push_back(0);
+    for (int i = 7; i >= 0; --i) msg.push_back(static_cast<std::uint8_t>((bitLen >> (i * 8)) & 0xff));
+
+    std::uint32_t h0 = 0x67452301;
+    std::uint32_t h1 = 0xEFCDAB89;
+    std::uint32_t h2 = 0x98BADCFE;
+    std::uint32_t h3 = 0x10325476;
+    std::uint32_t h4 = 0xC3D2E1F0;
+
+    for (std::size_t chunk = 0; chunk < msg.size(); chunk += 64) {
+        std::array<std::uint32_t, 80> w{};
+        for (int i = 0; i < 16; ++i) {
+            const std::size_t j = chunk + static_cast<std::size_t>(i) * 4;
+            w[i] = (static_cast<std::uint32_t>(msg[j]) << 24)
+                 | (static_cast<std::uint32_t>(msg[j + 1]) << 16)
+                 | (static_cast<std::uint32_t>(msg[j + 2]) << 8)
+                 | static_cast<std::uint32_t>(msg[j + 3]);
         }
-        return newMessage;
-    }
-    
-    SHA::WORD SHA::charToWord(char ch) {
-        return (BYTE)ch;
-    }
-    
-    SHA::WORD SHA::shiftLeft(WORD x, int n) {
-        return (x >> (32 - n)) | (x << n);
-    }
-    
-    void SHA::getWord(std::string& message, int index) {
-        for(int i = 0; i < 16; i++) {
-            Word[i] = (charToWord(message[index + 4*i]) << 24) + 
-                     (charToWord(message[index + 4*i + 1]) << 16) + 
-                     (charToWord(message[index + 4*i + 2]) << 8) + 
-                     charToWord(message[index + 4*i + 3]);
-        }
-        for(int i = 16; i < 80; i++) {
-            Word[i] = shiftLeft(Word[i-3] ^ Word[i-8] ^ Word[i-14] ^ Word[i-16], 1);
-        }
-    }
-    
-    SHA::SHA() : Word(80) {
-        reset();
-    }
-    
-    SHA::WORD SHA::kt(int t) {
-        if (t < 20)
-            return 0x5a827999;
-        else if (t < 40)
-            return 0x6ed9eba1;
-        else if (t < 60)
-            return 0x8f1bbcdc;
-        else
-            return 0xca62c1d6;
-    }
-    
-    SHA::WORD SHA::ft(int t, WORD B, WORD C, WORD D) {
-        if (t < 20)
-            return (B & C) | ((~B) & D);
-        else if (t < 40)
-            return B ^ C ^ D;
-        else if (t < 60)
-            return (B & C) | (B & D) | (C & D);
-        else
-            return B ^ C ^ D;
-    }
-    
-    std::string SHA::sha(std::string message) {
-        reset();
-        message = padding(message);
-        int byteLength = message.length();
-        for(int i = 0; i < byteLength; i += 64) {
-            getWord(message, i);
-            WORD a = A, b = B, c = C, d = D, e = E;
-            for(int j = 0; j < 80; j++) {
-                WORD temp = shiftLeft(a, 5) + ft(j, b, c, d) + e + kt(j) + Word[j];
-                e = d;
-                d = c;
-                c = shiftLeft(b, 30);
-                b = a;
-                a = temp;
+        for (int i = 16; i < 80; ++i) w[i] = rol(w[i - 3] ^ w[i - 8] ^ w[i - 14] ^ w[i - 16], 1);
+
+        std::uint32_t a = h0, b = h1, c = h2, d = h3, e = h4;
+        for (int i = 0; i < 80; ++i) {
+            std::uint32_t f = 0, k = 0;
+            if (i < 20) {
+                f = (b & c) | ((~b) & d);
+                k = 0x5A827999;
+            } else if (i < 40) {
+                f = b ^ c ^ d;
+                k = 0x6ED9EBA1;
+            } else if (i < 60) {
+                f = (b & c) | (b & d) | (c & d);
+                k = 0x8F1BBCDC;
+            } else {
+                f = b ^ c ^ d;
+                k = 0xCA62C1D6;
             }
-            A += a;
-            B += b;
-            C += c;
-            D += d;
-            E += e;
+            std::uint32_t temp = rol(a, 5) + f + e + k + w[i];
+            e = d;
+            d = c;
+            c = rol(b, 30);
+            b = a;
+            a = temp;
         }
-        std::stringstream ss;
-        ss << std::hex;
-        ss << std::setw(8) << std::setfill('0') << A;
-        ss << std::setw(8) << std::setfill('0') << B;
-        ss << std::setw(8) << std::setfill('0') << C;
-        ss << std::setw(8) << std::setfill('0') << D;
-        ss << std::setw(8) << std::setfill('0') << E;
-        return ss.str();
+        h0 += a; h1 += b; h2 += c; h3 += d; h4 += e;
     }
-    
-    SHA sha;
-    
-    std::string sha1(std::string message) {
-        return sha.sha(message);
-    }
-    
-    std::string sha1(std::string s1, std::string s2) {
-        return sha1(s1 + s2);
-    }
-    
-    std::string sha1(std::string s1, std::string s2, std::string s3, std::string s4) {
-        return sha1(s1 + s2 + s3 + s4);
-    }
+
+    std::ostringstream out;
+    out << std::hex << std::setfill('0')
+        << std::setw(8) << h0 << std::setw(8) << h1 << std::setw(8) << h2
+        << std::setw(8) << h3 << std::setw(8) << h4;
+    return out.str();
 }
 
-/* SHA-1 HASH VALUES. */
-/** Returns the SHA-1 hash of the concatenation of VALS, which may
- *  be any mixture of byte arrays and Strings. */
-std::string Utils::sha1(const std::string& s1) {
-    return SHA1::sha1(s1);
+std::string Utils::readFile(const std::string& path) {
+    std::ifstream in(path, std::ios::binary);
+    std::ostringstream ss;
+    ss << in.rdbuf();
+    return ss.str();
 }
 
-std::string Utils::sha1(const std::string& s1, const std::string& s2) {
-    return SHA1::sha1(s1, s2);
+void Utils::writeFile(const std::string& path, const std::string& data) {
+    fs::path p(path);
+    if (p.has_parent_path()) fs::create_directories(p.parent_path());
+    std::ofstream out(path, std::ios::binary | std::ios::trunc);
+    out.write(data.data(), static_cast<std::streamsize>(data.size()));
 }
 
-std::string Utils::sha1(const std::string& s1, const std::string& s2, 
-                       const std::string& s3, const std::string& s4) {
-    return SHA1::sha1(s1, s2, s3, s4);
+bool Utils::exists(const std::string& path) { return fs::exists(fs::path(path)); }
+bool Utils::isFile(const std::string& path) { return fs::is_regular_file(fs::path(path)); }
+bool Utils::isDirectory(const std::string& path) { return fs::is_directory(fs::path(path)); }
+bool Utils::createDirectories(const std::string& path) { return fs::create_directories(fs::path(path)); }
+
+bool Utils::restrictedDelete(const std::string& path) {
+    std::error_code ec;
+    return fs::remove(fs::path(path), ec);
 }
 
-/** Returns the SHA-1 hash of the concatenation of the strings in VALS. */
-std::string Utils::sha1(const std::vector<unsigned char>& data) {
-    std::string str(data.begin(), data.end());
-    return SHA1::sha1(str);
-}
-
-/* FILE DELETION */
-/** Deletes FILE if it exists and is not a directory.  Returns true
-*  if FILE was deleted, and false otherwise.  Refuses to delete FILE
-*  and throws IllegalArgumentException unless the directory designated by
-*  FILE also contains a directory named .gitlite. */
-bool Utils::restrictedDelete(const std::string& filepath) {
-    // Extract parent directory
-    size_t pos = filepath.find_last_of("/\\");
-    std::string parentDir = (pos == std::string::npos) ? "." : filepath.substr(0, pos);
-    std::string gitliteDir = parentDir + "/.gitlite";
-
-    if (!isDirectory(gitliteDir)) {
-        throw std::invalid_argument("not .gitlite working directory");
-    }
-    
-    if (isFile(filepath)) {
-        return remove(filepath.c_str()) == 0;
-    }
-    return false;
-}
-
- /* READING AND WRITING FILE CONTENTS */
-/** Return the entire contents of FILE as a byte array.  FILE must
- *  be a normal file.  Throws IllegalArgumentException
- *  in case of problems. */
-std::vector<unsigned char> Utils::readContents(const std::string& filepath) {
-    if (!isFile(filepath)) {
-        throw std::invalid_argument("must be a normal file");
-    }
-    
-    std::ifstream file(filepath, std::ios::binary);
-    if (!file.is_open()) {
-        throw std::invalid_argument("cannot open file");
-    }
-    
-    file.seekg(0, std::ios::end);
-    size_t size = file.tellg();
-    file.seekg(0, std::ios::beg);
-    
-    std::vector<unsigned char> contents(size);
-    file.read(reinterpret_cast<char*>(contents.data()), size);
-    
-    return contents;
-}
-
-/** Return the entire contents of FILE as a String.  FILE must
- *  be a normal file.  Throws IllegalArgumentException
- *  in case of problems. */
-std::string Utils::readContentsAsString(const std::string& filepath) {
-    auto contents = readContents(filepath);
-    return std::string(contents.begin(), contents.end());
-}
-
-/** Write the result of concatenating the bytes in CONTENTS to FILE,
- *  creating or overwriting it as needed.  Each object in CONTENTS may be
- *  either a String or a byte array.  Throws IllegalArgumentException
- *  in case of problems. */
-void Utils::writeContents(const std::string& filepath, const std::string& content) {
-    // Create parent directories if needed
-    size_t pos = filepath.find_last_of("/\\");
-    if (pos != std::string::npos) {
-        std::string parentDir = filepath.substr(0, pos);
-        createDirectories(parentDir);
-    }
-    
-    std::ofstream file(filepath, std::ios::binary);
-    if (!file.is_open()) {
-        throw std::invalid_argument("cannot create file");
-    }
-    
-    file.write(content.c_str(), content.size());
-}
-
-void Utils::writeContents(const std::string& filepath, const std::vector<unsigned char>& content) {
-    // Create parent directories if needed
-    size_t pos = filepath.find_last_of("/\\");
-    if (pos != std::string::npos) {
-        std::string parentDir = filepath.substr(0, pos);
-        createDirectories(parentDir);
-    }
-    
-    std::ofstream file(filepath, std::ios::binary);
-    if (!file.is_open()) {
-        throw std::invalid_argument("cannot create file");
-    }
-    
-    file.write(reinterpret_cast<const char*>(content.data()), content.size());
-}
-
-/** Returns a list of the names of all plain files in the directory DIR, in
-*  order as C++ Strings.  Returns null if DIR does
-*  not denote a directory. */
 std::vector<std::string> Utils::plainFilenamesIn(const std::string& dirPath) {
-    std::vector<std::string> files;
-    
-    DIR* dir = opendir(dirPath.c_str());
-    if (dir == nullptr) {
-        return files;
+    std::vector<std::string> result;
+    std::error_code ec;
+    if (!fs::is_directory(fs::path(dirPath), ec)) return result;
+    for (const auto& entry : fs::directory_iterator(fs::path(dirPath))) {
+        if (entry.is_regular_file()) result.push_back(entry.path().filename().string());
     }
-    
-    struct dirent* entry;
-    while ((entry = readdir(dir)) != nullptr) {
-        if (entry->d_type == DT_REG) { // Regular file
-            files.push_back(std::string(entry->d_name));
-        }
-    }
-    
-    closedir(dir);
-    std::sort(files.begin(), files.end());
-    return files;
+    std::sort(result.begin(), result.end());
+    return result;
 }
 
-/* OTHER FILE UTILITIES */
-
-/** Return the concatenation of FIRST and SECOND into a File path,
- *  handling empty strings and path separators appropriately. */
-std::string Utils::join(const std::string& first, const std::string& second) {
-    if (first.empty()) return second;
-    if (second.empty()) return first;
-    
-    if (first.back() == '/' || first.back() == '\\') {
-        return first + second;
-    }
-    return first + "/" + second;
-}
-
-std::string Utils::join(const std::string& first, const std::string& second, const std::string& third) {
-    return join(join(first, second), third);
-}
-
-/** Returns a byte array containing the serialized contents of OBJ. */
-std::vector<unsigned char> Utils::serialize(const std::string& obj) {
-    return std::vector<unsigned char>(obj.begin(), obj.end());
-}
-
-/** Print a message composed from MSG and ARGS as for the String.format
- *  method, followed by a newline. */
-void Utils::message(const std::string& msg) {
-    std::cout << msg << std::endl;
-}
-
-void Utils::exitWithMessage(const std::string& msg) {
-    message(msg);
+void Utils::message(const std::string& msg) { std::cout << msg << '\n'; }
+[[noreturn]] void Utils::exitWithMessage(const std::string& msg) {
+    std::cout << msg << '\n';
     std::exit(0);
 }
 
-/** Returns true if PATH exists as a file or directory. */
-bool Utils::exists(const std::string& path) {
-    struct stat buffer;
-    return (stat(path.c_str(), &buffer) == 0);
+std::map<std::string, std::string> Utils::readMap(const std::string& path) {
+    std::map<std::string, std::string> result;
+    if (!isFile(path)) return result;
+    std::ifstream in(path, std::ios::binary);
+    std::size_t count = 0;
+    if (!(in >> count)) return result;
+    for (std::size_t i = 0; i < count; ++i) {
+        std::string k, v;
+        in >> std::quoted(k) >> std::quoted(v);
+        result[k] = v;
+    }
+    return result;
 }
 
-/** Returns true if PATH exists and is a regular file. */
-bool Utils::isFile(const std::string& path) {
-    struct stat buffer;
-    if (stat(path.c_str(), &buffer) != 0) {
-        return false;
-    }
-    return S_ISREG(buffer.st_mode);
+void Utils::writeMap(const std::string& path, const std::map<std::string, std::string>& values) {
+    fs::path p(path);
+    if (p.has_parent_path()) fs::create_directories(p.parent_path());
+    std::ofstream out(path, std::ios::binary | std::ios::trunc);
+    out << values.size() << '\n';
+    for (const auto& [k, v] : values) out << std::quoted(k) << ' ' << std::quoted(v) << '\n';
 }
 
-/** Returns true if PATH exists and is a directory. */
-bool Utils::isDirectory(const std::string& path) {
-    struct stat buffer;
-    if (stat(path.c_str(), &buffer) != 0) {
-        return false;
+std::set<std::string> Utils::readSet(const std::string& path) {
+    std::set<std::string> result;
+    if (!isFile(path)) return result;
+    std::ifstream in(path, std::ios::binary);
+    std::size_t count = 0;
+    if (!(in >> count)) return result;
+    for (std::size_t i = 0; i < count; ++i) {
+        std::string v;
+        in >> std::quoted(v);
+        result.insert(v);
     }
-    return S_ISDIR(buffer.st_mode);
+    return result;
 }
 
-/** Recursively creates all directories in PATH if they don't exist.
- *  Returns true if all directories were created or already exist,
- *  false otherwise. */
-bool Utils::createDirectories(const std::string& path) {
-    if (path.empty()) return true;
-    if (isDirectory(path)) return true;
-    
-    size_t pos = path.find_last_of("/\\");
-    if (pos != std::string::npos) {
-        std::string parent = path.substr(0, pos);
-        if (!createDirectories(parent)) {
-            return false;
-        }
-    }
-    
-    return mkdir(path.c_str(), 0755) == 0 || isDirectory(path);
+void Utils::writeSet(const std::string& path, const std::set<std::string>& values) {
+    fs::path p(path);
+    if (p.has_parent_path()) fs::create_directories(p.parent_path());
+    std::ofstream out(path, std::ios::binary | std::ios::trunc);
+    out << values.size() << '\n';
+    for (const auto& v : values) out << std::quoted(v) << '\n';
 }
