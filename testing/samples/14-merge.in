@@ -17,3 +17,17 @@
 Current branch fast-forwarded.
 <<<
 = f.txt wug.txt
+> status
+=== Branches ===
+feature
+*master
+
+=== Staged Files ===
+
+=== Removed Files ===
+
+=== Modifications Not Staged For Commit ===
+
+=== Untracked Files ===
+
+<<<

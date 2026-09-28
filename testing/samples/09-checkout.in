@@ -6,6 +6,12 @@
 <<<
 > commit "first"
 <<<
+> tag saved
+<<<
++ f.txt notwug.txt
+> checkout saved -- f.txt
+<<<
+= f.txt wug.txt
 + f.txt notwug.txt
 > checkout -- f.txt
 <<<

@@ -26,7 +26,9 @@ first
 (?:.|\n)*
 <<<*
 D FIRST "${2}"
-> reset ${FIRST}
+> tag first ${FIRST}
+<<<
+> reset first
 <<<
 = f.txt wug.txt
 > log

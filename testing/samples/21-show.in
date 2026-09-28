@@ -1,0 +1,49 @@
+# Goal: show prints one commit entry and its first-parent diff.
+> init
+<<<
+D DATE "Date: \w{3} \w{3} \d{2} \d{2}:\d{2}:\d{2} \d{4} [-+]\d{4}"
++ f.txt wug.txt
+> add f.txt
+<<<
+> commit "add f"
+<<<
+> log
+===
+commit ([a-f0-9]{40})
+(Date: \w{3} \w{3} \d{2} \d{2}:\d{2}:\d{2} \d{4} [-+]\d{4})
+add f
+
+===
+commit [a-f0-9]{40}
+${DATE}
+initial commit
+
+<<<*
+D SHOWN "${1}"
+D SHOWN_DATE "${2}"
+> tag shown
+<<<
+> show shown
+===
+commit ${SHOWN}
+${SHOWN_DATE}
+add f
+
+diff --gitlite a/f.txt b/f.txt
+--- /dev/null
++++ b/f.txt
+@@ -0,0 +1,1 @@
++This is a wug.
+<<<
+> show
+===
+commit ${SHOWN}
+${SHOWN_DATE}
+add f
+
+diff --gitlite a/f.txt b/f.txt
+--- /dev/null
++++ b/f.txt
+@@ -0,0 +1,1 @@
++This is a wug.
+<<<

@@ -1,4 +1,4 @@
-# Goal: basic status reports branches, staged additions, and staged removals.
+# Goal: status reports all five sections, including unstaged and untracked files.
 > init
 <<<
 + f.txt wug.txt
@@ -11,6 +11,8 @@
 <<<
 > add g.txt
 <<<
++ g.txt notwug.txt
++ u.txt wug2.txt
 > status
 === Branches ===
 *master
@@ -22,7 +24,9 @@ g.txt
 f.txt
 
 === Modifications Not Staged For Commit ===
+g.txt (modified)
 
 === Untracked Files ===
+u.txt
 
 <<<

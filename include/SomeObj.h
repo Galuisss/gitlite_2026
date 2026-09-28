@@ -15,17 +15,20 @@ public:
     void rm(const std::string& f);      // gitlite rm [文件名]
     void log();                         // gitlite log
     void globalLog();                   // gitlite global-log
-    void find(const std::string& m);    // gitlite find [提交信息]
+    void listTags();                    // gitlite tag
+    void tag(const std::string& n);     // gitlite tag [标签名]
+    void tag(const std::string& n,
+             const std::string& rev);   // gitlite tag [标签名] [revision]
     void status();                      // gitlite status
 
     void checkoutBranch(const std::string& b);                      // gitlite checkout [分支名]
     void checkoutFile(const std::string& f);                        // gitlite checkout -- [文件名]
-    void checkoutFileInCommit(const std::string& id,
-                              const std::string& f);                // gitlite checkout [提交id] -- [文件名]
+    void checkoutFileInCommit(const std::string& rev,
+                              const std::string& f);                // gitlite checkout [revision] -- [文件名]
 
     void branch(const std::string& b);  // gitlite branch [分支名]
     void rmBranch(const std::string& b);// gitlite rm-branch [分支名]
-    void reset(const std::string& id);  // gitlite reset [提交id]
+    void reset(const std::string& rev); // gitlite reset [revision]
     void merge(const std::string& b);   // gitlite merge [分支名]
 
     void addRemote(const std::string& n, const std::string& p);     // gitlite add-remote [远程名] [路径]/.gitlite
@@ -35,8 +38,10 @@ public:
     void pull(const std::string& n, const std::string& b);          // gitlite pull [远程名] [远程分支名]
 
     void diff();                                                    // gitlite diff
-    void diffWithCommit(const std::string& id);                     // gitlite diff [提交id]
-    void diffBetween(const std::string& id1, const std::string& id2);// gitlite diff [提交id1] [提交id2]
+    void diffWithCommit(const std::string& rev);                    // gitlite diff [revision]
+    void diffBetween(const std::string& rev1, const std::string& rev2);// gitlite diff [revision1] [revision2]
+    void show();                                                    // gitlite show
+    void show(const std::string& rev);                              // gitlite show [revision]
 };
 
 #endif // SOME_OBJ_H
