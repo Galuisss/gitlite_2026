@@ -19,7 +19,7 @@ void SomeObj::checkoutFileInCommit(const std::string& r, const std::string& f) {
 void SomeObj::branch(const std::string& b) { Repository().branch(b); }
 void SomeObj::rmBranch(const std::string& b) { Repository().rmBranch(b); }
 void SomeObj::reset(const std::string& r) { Repository().reset(r); }
-void SomeObj::merge(const std::string&) {}
+void SomeObj::merge(const std::string& b) { Repository().merge(b); }
 void SomeObj::addRemote(const std::string&, const std::string&) {}
 void SomeObj::rmRemote(const std::string&) {}
 void SomeObj::push(const std::string&, const std::string&) {}
