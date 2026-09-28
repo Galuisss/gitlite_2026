@@ -11,6 +11,8 @@ add_executable(gitlite
     src/Subtask3.cpp
     src/Subtask4.cpp
     src/Subtask5.cpp
+    src/Remote.cpp
+    src/Diff.cpp
     src/SomeObj.cpp
 )
 

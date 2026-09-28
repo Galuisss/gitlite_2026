@@ -20,13 +20,13 @@ void SomeObj::branch(const std::string& b) { Repository().branch(b); }
 void SomeObj::rmBranch(const std::string& b) { Repository().rmBranch(b); }
 void SomeObj::reset(const std::string& r) { Repository().reset(r); }
 void SomeObj::merge(const std::string& b) { Repository().merge(b); }
-void SomeObj::addRemote(const std::string&, const std::string&) {}
-void SomeObj::rmRemote(const std::string&) {}
-void SomeObj::push(const std::string&, const std::string&) {}
-void SomeObj::fetch(const std::string&, const std::string&) {}
-void SomeObj::pull(const std::string&, const std::string&) {}
-void SomeObj::diff() {}
-void SomeObj::diffWithCommit(const std::string&) {}
-void SomeObj::diffBetween(const std::string&, const std::string&) {}
-void SomeObj::show() {}
-void SomeObj::show(const std::string&) {}
+void SomeObj::addRemote(const std::string& n, const std::string& p) { Repository().addRemote(n, p); }
+void SomeObj::rmRemote(const std::string& n) { Repository().rmRemote(n); }
+void SomeObj::push(const std::string& n, const std::string& b) { Repository().push(n, b); }
+void SomeObj::fetch(const std::string& n, const std::string& b) { Repository().fetch(n, b); }
+void SomeObj::pull(const std::string& n, const std::string& b) { Repository().pull(n, b); }
+void SomeObj::diff() { Repository().diff(); }
+void SomeObj::diffWithCommit(const std::string& r) { Repository().diffWithCommit(r); }
+void SomeObj::diffBetween(const std::string& a, const std::string& b) { Repository().diffBetween(a, b); }
+void SomeObj::show() { Repository().show(); }
+void SomeObj::show(const std::string& r) { Repository().show(r); }
