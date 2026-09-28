@@ -7,11 +7,11 @@ void SomeObj::init() { Repository().init(); }
 void SomeObj::add(const std::string& f) { Repository().add(f); }
 void SomeObj::commit(const std::string& m) { Repository().commit(m); }
 void SomeObj::rm(const std::string& f) { Repository().rm(f); }
-void SomeObj::log() {}
-void SomeObj::globalLog() {}
-void SomeObj::listTags() {}
-void SomeObj::tag(const std::string&) {}
-void SomeObj::tag(const std::string&, const std::string&) {}
+void SomeObj::log() { Repository().log(); }
+void SomeObj::globalLog() { Repository().globalLog(); }
+void SomeObj::listTags() { Repository().listTags(); }
+void SomeObj::tag(const std::string& n) { Repository().tag(n); }
+void SomeObj::tag(const std::string& n, const std::string& r) { Repository().tag(n, r); }
 void SomeObj::status() {}
 void SomeObj::checkoutBranch(const std::string&) {}
 void SomeObj::checkoutFile(const std::string&) {}

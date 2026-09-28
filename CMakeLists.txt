@@ -7,6 +7,7 @@ add_executable(gitlite
     src/Commit.cpp
     src/RepositoryCore.cpp
     src/Subtask1.cpp
+    src/Subtask2.cpp
     src/SomeObj.cpp
 )
 
