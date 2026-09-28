@@ -13,12 +13,12 @@ void SomeObj::listTags() { Repository().listTags(); }
 void SomeObj::tag(const std::string& n) { Repository().tag(n); }
 void SomeObj::tag(const std::string& n, const std::string& r) { Repository().tag(n, r); }
 void SomeObj::status() { Repository().status(); }
-void SomeObj::checkoutBranch(const std::string&) {}
-void SomeObj::checkoutFile(const std::string&) {}
-void SomeObj::checkoutFileInCommit(const std::string&, const std::string&) {}
+void SomeObj::checkoutBranch(const std::string& b) { Repository().checkoutBranch(b); }
+void SomeObj::checkoutFile(const std::string& f) { Repository().checkoutFile(f); }
+void SomeObj::checkoutFileInCommit(const std::string& r, const std::string& f) { Repository().checkoutFileInCommit(r, f); }
 void SomeObj::branch(const std::string& b) { Repository().branch(b); }
 void SomeObj::rmBranch(const std::string& b) { Repository().rmBranch(b); }
-void SomeObj::reset(const std::string&) {}
+void SomeObj::reset(const std::string& r) { Repository().reset(r); }
 void SomeObj::merge(const std::string&) {}
 void SomeObj::addRemote(const std::string&, const std::string&) {}
 void SomeObj::rmRemote(const std::string&) {}

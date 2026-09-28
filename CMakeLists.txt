@@ -9,6 +9,7 @@ add_executable(gitlite
     src/Subtask1.cpp
     src/Subtask2.cpp
     src/Subtask3.cpp
+    src/Subtask4.cpp
     src/SomeObj.cpp
 )
 
